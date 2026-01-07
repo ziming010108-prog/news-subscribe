@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日产品经理新闻订阅 | AI摘要</title>
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        /* 订阅卡片 */
+        .subscribe-card {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+        /* 标题 */
+        .card-title {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .card-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        /* 输入框 */
+        .email-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .email-input:focus {
+            border-color: #007bff;
+        }
+        /* 按钮 */
+        .subscribe-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .subscribe-btn:hover {
+            background-color: #0056b3;
+        }
+        .subscribe-btn:active {
+            background-color: #004085;
+        }
+        /* 提示消息 */
+        .message {
+            margin-top: 20px;
+            font-size: 14px;
+            height: 20px;
+            line-height: 20px;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        /* 底部说明 */
+        .footer-note {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="subscribe-card">
+        <h1 class="card-title">每日产品经理新闻订阅</h1>
+        <p class="card-subtitle">输入你的邮箱，每日自动收到AI摘要的产品/互联网新闻<br>（数据来源：人人都是产品经理 | AI：魔塔社区）</p>
+        
+        <input type="email" class="email-input" id="emailInput" placeholder="请输入你的邮箱地址（如：123456@qq.com）">
+        <button class="subscribe-btn" id="subscribeBtn">订阅每日新闻</button>
+        
+        <div class="message" id="message"></div>
+        
+        <p class="footer-note">✓ 每日8点自动发送 | ✓ 无广告 | ✓ 可随时取消订阅</p>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const emailInput = document.getElementById('emailInput');
+        const subscribeBtn = document.getElementById('subscribeBtn');
+        const message = document.getElementById('message');
+
+        // 订阅按钮点击事件
+        subscribeBtn.addEventListener('click', async () => {
+            // 获取并验证邮箱
+            const email = emailInput.value.trim();
+            if (!email) {
+                showMessage('请输入邮箱地址！', 'error');
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showMessage('请输入有效的邮箱地址！', 'error');
+                return;
+            }
+
+            try {
+                // 调用后端订阅接口
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const result = await response.json();
+                showMessage(result.msg, result.success ? 'success' : 'error');
+                
+                // 订阅成功清空输入框
+                if (result.success) {
+                    emailInput.value = '';
+                }
+            } catch (error) {
+                showMessage('网络错误，请稍后再试！', 'error');
+                console.error('订阅请求失败：', error);
+            }
+        });
+
+        // 回车键触发订阅
+        emailInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                subscribeBtn.click();
+            }
+        });
+
+        // 显示提示消息
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+            
+            // 3秒后清空消息
+            setTimeout(() => {
+                message.textContent = '';
+                message.className = 'message';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
